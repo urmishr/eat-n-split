@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 const initialFriends = [
     {
         id: 118836,
@@ -20,14 +22,35 @@ const initialFriends = [
 ];
 
 export default function App() {
+    const [showAddFriendForm, setAddFriendForm] = useState(false);
+    const [showSplitBillForm, setSplitBillForm] = useState(false);
+    const [name, setName] = useState("");
+    const [image, setImage] = useState("");
+    const [friends, setFriends] = useState([]);
+
+    function handleAddFriend(e) {
+        e.preventDefault();
+        const newFriend = { id: Date.now(), name, image, balance: 0 };
+        console.log(newFriend);
+        setFriends([...friends, newFriend]);
+    }
+
+    function handleShowAddFriend() {
+        setAddFriendForm((show) => !show);
+    }
+
+    function handleSelectFriend(id) {
+        console.log(id);
+    }
     return (
         <>
             <Header />
             <div className="app">
                 <div className="sidebar">
-                    <FriendList />
-                    <FriendAddForm />
-                    <Button>Add Friend</Button>
+                    <FriendList friends={friends} onHandleSelectFriend={handleSelectFriend} />
+
+                    {showAddFriendForm && <FriendAddForm name={name} onChangeName={setName} image={image} onChangeImage={setImage} handleAddFriend={handleAddFriend} />}
+                    <Button onClick={handleShowAddFriend}>{showAddFriendForm ? "Close" : "Add Friend"}</Button>
                 </div>
                 <FormSplitBill />
             </div>
@@ -44,18 +67,17 @@ function Header() {
     );
 }
 
-function FriendList() {
-    const friends = initialFriends;
+function FriendList({ friends, onHandleSelectFriend }) {
     return (
         <ul>
             {friends.map((friend) => (
-                <Friend friend={friend} key={friend.id} />
+                <Friend friend={friend} key={friend.id} onHandleSelectFriend={onHandleSelectFriend} />
             ))}
         </ul>
     );
 }
 
-function Friend({ friend }) {
+function Friend({ friend, onHandleSelectFriend }) {
     return (
         <li>
             <img src={friend.image} alt={friend.name} />
@@ -71,24 +93,28 @@ function Friend({ friend }) {
             ) : (
                 <p>You and {friend.name} are even.</p>
             )}
-            <Button>Select</Button>
+            <Button onClick={() => onHandleSelectFriend(friend.id)}>Select</Button>
         </li>
     );
 }
 
-function Button({ children }) {
-    return <button className="button">{children}</button>;
+function Button({ children, onClick }) {
+    return (
+        <button className="button" onClick={onClick}>
+            {children}
+        </button>
+    );
 }
 
-function FriendAddForm() {
+function FriendAddForm({ name, onChangeName, image, onChangeImage, handleAddFriend }) {
     return (
         <>
-            <form className="form-add-friend">
+            <form className="form-add-friend" onSubmit={handleAddFriend}>
                 <label>🫱🏼‍🫲🏽 Friend Name: </label>
-                <input type="text" placeholder="Name of friend..."></input>
+                <input type="text" placeholder="Name of friend..." value={name} onChange={(e) => onChangeName(e.target.value)}></input>
                 <label>🌄 Image URL: </label>
-                <input type="text" placeholder="Profile pic URL..."></input>
-                <Button>Submit</Button>
+                <input type="text" placeholder="Profile pic URL..." value={image} onChange={(e) => onChangeImage(e.target.value)}></input>
+                <Button>Add</Button>
             </form>
         </>
     );
