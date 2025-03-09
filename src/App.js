@@ -23,33 +23,26 @@ const initialFriends = [
 
 export default function App() {
     const [showAddFriendForm, setAddFriendForm] = useState(false);
-    const [showSplitBillForm, setSplitBillForm] = useState(false);
-    const [name, setName] = useState("");
-    const [image, setImage] = useState("");
-    const [friends, setFriends] = useState([]);
 
-    function handleAddFriend(e) {
-        e.preventDefault();
-        const newFriend = { id: Date.now(), name, image, balance: 0 };
-        console.log(newFriend);
-        setFriends([...friends, newFriend]);
-    }
+    const [friends, setFriends] = useState(initialFriends);
 
     function handleShowAddFriend() {
         setAddFriendForm((show) => !show);
     }
 
-    function handleSelectFriend(id) {
-        console.log(id);
+    function handleAddFriend(friend) {
+        setFriends((friends) => [...friends, friend]);
+        setAddFriendForm(false);
     }
+
     return (
         <>
             <Header />
             <div className="app">
                 <div className="sidebar">
-                    <FriendList friends={friends} onHandleSelectFriend={handleSelectFriend} />
+                    <FriendList friends={friends} />
 
-                    {showAddFriendForm && <FriendAddForm name={name} onChangeName={setName} image={image} onChangeImage={setImage} handleAddFriend={handleAddFriend} />}
+                    {showAddFriendForm && <FriendAddForm friends={friends} onSetFriend={handleAddFriend} />}
                     <Button onClick={handleShowAddFriend}>{showAddFriendForm ? "Close" : "Add Friend"}</Button>
                 </div>
                 <FormSplitBill />
@@ -67,17 +60,17 @@ function Header() {
     );
 }
 
-function FriendList({ friends, onHandleSelectFriend }) {
+function FriendList({ friends }) {
     return (
         <ul>
             {friends.map((friend) => (
-                <Friend friend={friend} key={friend.id} onHandleSelectFriend={onHandleSelectFriend} />
+                <Friend friend={friend} key={friend.id} />
             ))}
         </ul>
     );
 }
 
-function Friend({ friend, onHandleSelectFriend }) {
+function Friend({ friend }) {
     return (
         <li>
             <img src={friend.image} alt={friend.name} />
@@ -93,7 +86,7 @@ function Friend({ friend, onHandleSelectFriend }) {
             ) : (
                 <p>You and {friend.name} are even.</p>
             )}
-            <Button onClick={() => onHandleSelectFriend(friend.id)}>Select</Button>
+            <Button>Select</Button>
         </li>
     );
 }
@@ -106,15 +99,28 @@ function Button({ children, onClick }) {
     );
 }
 
-function FriendAddForm({ name, onChangeName, image, onChangeImage, handleAddFriend }) {
+function FriendAddForm({ onSetFriend, friends }) {
+    const [name, setName] = useState("");
+    const [image, setImage] = useState("https://i.pravatar.cc/48?u=");
+
+    function handleAddFriend(e) {
+        e.preventDefault();
+        if (!name) return;
+        const id = crypto.randomUUID();
+        const newFriend = { id, name, image: `${image}${id}`, balance: 0 };
+        console.log(newFriend);
+        onSetFriend(newFriend);
+        setName("");
+        setImage("https://i.pravatar.cc/48?u=");
+    }
     return (
         <>
             <form className="form-add-friend" onSubmit={handleAddFriend}>
                 <label>🫱🏼‍🫲🏽 Friend Name: </label>
-                <input type="text" placeholder="Name of friend..." value={name} onChange={(e) => onChangeName(e.target.value)}></input>
+                <input type="text" placeholder="Name of friend..." value={name} onChange={(e) => setName(e.target.value)}></input>
                 <label>🌄 Image URL: </label>
-                <input type="text" placeholder="Profile pic URL..." value={image} onChange={(e) => onChangeImage(e.target.value)}></input>
-                <Button>Add</Button>
+                <input type="text" placeholder="Profile pic URL..." value={image} onChange={(e) => setImage(e.target.value)}></input>
+                <Button onClick={handleAddFriend}>Add</Button>
             </form>
         </>
     );
