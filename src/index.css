@@ -180,3 +180,8 @@ form h2 {
 .header {
     text-align: center;
 }
+
+input::placeholder {
+    color: #c8c8c8;
+    font-size: small;
+}
